@@ -1,0 +1,42 @@
+version : '3'
+services:
+  coba_php:
+    build: ./php
+    image: coba_php:latest
+    container_name: coba_php
+    hostname: "coba_php"
+    volumes:
+      - ./src:/var/www/html
+      - ./php/www.conf:/usr/local/etc/php-fpm.d/www.conf
+    working_dir: /var/www/html
+    depends_on: 
+      - db_coba
+  db_coba:
+    image: mariadb:10.2
+    container_name: db_coba
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "43308:3306"
+    volumes:
+      - ./db_coba/data:/var/lib/mysql
+      - ./db_coba/conf.d:/etc/mysql/conf.d:ro
+    environment:
+      MYSQL_USER: rafii
+      MYSQL_PASSWORD: 123
+      MYSQL_ROOT_PASSWORD: 123
+      TZ: Asia/Jakarta
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql  
+  nginx_ini:
+    build: ./nginx
+    image: nginx_ini:latest
+    container_name: nginx_ini
+    hostname: "nginx_ini"
+    ports:
+      - "88:80"
+    volumes:
+      - ./src:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - coba_php
